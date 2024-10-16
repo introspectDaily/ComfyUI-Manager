@@ -611,10 +611,13 @@ def git_pull(path):
     return True
 
 
+
+from reurl import reurl
+# MASK: 初始化服务器时，会调用
 async def get_data(uri, silent=False):
     if not silent:
         print(f"FETCH DATA from: {uri}", end="")
-
+    uri = reurl(uri) # MASK: change
     if uri.startswith("http"):
         async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
             async with session.get(uri) as resp:

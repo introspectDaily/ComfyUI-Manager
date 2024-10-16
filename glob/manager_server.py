@@ -299,7 +299,7 @@ def get_model_path(data):
     base_model = get_model_dir(data)
     return os.path.join(base_model, data['filename'])
 
-
+# MASK: 在点击 Fetch Updates时被调用
 def check_custom_nodes_installed(json_obj, do_fetch=False, do_update_check=True, do_update=False):
     if do_fetch:
         print("Start fetching...", end="")
@@ -1013,7 +1013,8 @@ async def toggle_active(request):
 
     return web.Response(status=400)
 
-
+from reurl import reurl
+# MASK: 点击模型下载后调用
 @PromptServer.instance.routes.post("/model/install")
 async def install_model(request):
     json_data = await request.json()
@@ -1047,6 +1048,7 @@ async def install_model(request):
             if not core.get_config()['model_download_by_agent'] and (
                     model_url.startswith('https://github.com') or model_url.startswith('https://huggingface.co') or model_url.startswith('https://heibox.uni-heidelberg.de')):
                 model_dir = get_model_dir(json_data)
+                model_url = reurl(model_url) # Change
                 download_url(model_url, model_dir, filename=json_data['filename'])
                 if model_path.endswith('.zip'):
                     res = core.unzip(model_path)
@@ -1056,6 +1058,7 @@ async def install_model(request):
                 if res:
                     return web.json_response({}, content_type='application/json')
             else:
+                model_url = reurl(model_url) # Change
                 res = download_url_with_agent(model_url, model_path)
                 if res and model_path.endswith('.zip'):
                     res = core.unzip(model_path)
@@ -1187,10 +1190,12 @@ def add_target_blank(html_text):
 
     return modified_html
 
-
+# MASK: 无法访问github时包错
 @PromptServer.instance.routes.get("/manager/notice")
 async def get_notice(request):
-    url = "github.com"
+    # url = "github.com"
+    url = "ghp.ci"
+    
     path = "/ltdrdata/ltdrdata.github.io/wiki/News"
 
     async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
@@ -1339,7 +1344,7 @@ cm_global.register_api('cm.try-install-custom-node', confirm_try_install)
 
 import asyncio
 
-
+# MASK: 
 async def default_cache_update():
     async def get_cache(filename):
         uri = 'https://raw.githubusercontent.com/ltdrdata/ComfyUI-Manager/main/' + filename
